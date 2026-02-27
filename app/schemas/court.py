@@ -8,6 +8,7 @@ class CourtCreate(BaseModel):
     description: str | None = None
     price_per_hour: float
     surface_type: str | None = None
+    image_url: str | None = None
 
 
 class CourtUpdate(BaseModel):
@@ -15,6 +16,7 @@ class CourtUpdate(BaseModel):
     description: str | None = None
     price_per_hour: float | None = None
     surface_type: str | None = None
+    image_url: str | None = None
     is_active: bool | None = None
 
 
@@ -25,6 +27,7 @@ class CourtOut(BaseModel):
     description: str | None
     price_per_hour: float
     surface_type: str | None
+    image_url: str | None
     is_active: bool
     created_at: datetime
 

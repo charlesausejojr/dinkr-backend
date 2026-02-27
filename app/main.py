@@ -2,8 +2,10 @@ import time
 import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.routers import auth, establishments, courts, coaches, bookings, coach_bookings, availability
+from app.routers import upload
 
 # ── Logging setup ─────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -47,6 +49,9 @@ app.include_router(coaches.router, prefix="/coaches", tags=["Coaches"])
 app.include_router(bookings.router, prefix="/bookings", tags=["Bookings"])
 app.include_router(coach_bookings.router, prefix="/coach-bookings", tags=["Coach Bookings"])
 app.include_router(availability.router, prefix="/availability", tags=["Availability"])
+app.include_router(upload.router, prefix="/upload", tags=["Upload"])
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.get("/health")

@@ -14,6 +14,7 @@ class Court(Base):
     description = Column(Text)
     price_per_hour = Column(Float, nullable=False)
     surface_type = Column(String)
+    image_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

@@ -1,0 +1,698 @@
+{
+  "info": {
+    "name": "Dinkr API",
+    "description": "Full endpoint collection for the Dinkr pickleball booking platform.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "establishment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "court_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "coach_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "booking_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "coach_booking_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.access_token) {",
+                  "        pm.collectionVariables.set('access_token', json.access_token);",
+                  "    }",
+                  "    if (json.id) {",
+                  "        pm.collectionVariables.set('user_id', json.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"password\": \"securepassword123\",\n  \"full_name\": \"Test User\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', json.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "username", "value": "testuser@example.com" },
+                { "key": "password", "value": "securepassword123" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Get Current User (Me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Establishments",
+      "item": [
+        {
+          "name": "List All Establishments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/establishments",
+              "host": ["{{base_url}}"],
+              "path": ["establishments"]
+            }
+          }
+        },
+        {
+          "name": "Get Establishment by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/establishments/{{establishment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["establishments", "{{establishment_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Establishment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('establishment_id', json.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sunset Pickleball Club\",\n  \"location\": \"123 Main Street, Austin, TX\",\n  \"description\": \"Premier pickleball facility with 6 courts and pro shop.\",\n  \"amenities\": [\"Parking\", \"Showers\", \"Pro Shop\", \"Water Fountain\"],\n  \"images\": [\"https://example.com/court1.jpg\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/establishments",
+              "host": ["{{base_url}}"],
+              "path": ["establishments"]
+            }
+          }
+        },
+        {
+          "name": "Update Establishment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sunset Pickleball Club (Updated)\",\n  \"description\": \"Updated description with new amenities.\",\n  \"amenities\": [\"Parking\", \"Showers\", \"Pro Shop\", \"Water Fountain\", \"Lounge\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/establishments/{{establishment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["establishments", "{{establishment_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Establishment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/establishments/{{establishment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["establishments", "{{establishment_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Courts for Establishment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/establishments/{{establishment_id}}/courts",
+              "host": ["{{base_url}}"],
+              "path": ["establishments", "{{establishment_id}}", "courts"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courts",
+      "item": [
+        {
+          "name": "List All Courts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/courts",
+              "host": ["{{base_url}}"],
+              "path": ["courts"]
+            }
+          }
+        },
+        {
+          "name": "Get Court by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/courts/{{court_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["courts", "{{court_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Court",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('court_id', json.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"establishment_id\": \"{{establishment_id}}\",\n  \"name\": \"Court 1\",\n  \"description\": \"Indoor hardcourt with LED lighting\",\n  \"price_per_hour\": 25.00,\n  \"surface_type\": \"Indoor\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/courts",
+              "host": ["{{base_url}}"],
+              "path": ["courts"]
+            }
+          }
+        },
+        {
+          "name": "Update Court",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Court 1 (Premium)\",\n  \"price_per_hour\": 30.00,\n  \"surface_type\": \"Indoor Hardcourt\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/courts/{{court_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["courts", "{{court_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Court",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/courts/{{court_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["courts", "{{court_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coaches",
+      "item": [
+        {
+          "name": "List All Coaches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coaches",
+              "host": ["{{base_url}}"],
+              "path": ["coaches"]
+            }
+          }
+        },
+        {
+          "name": "Get Coach by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coaches/{{coach_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["coaches", "{{coach_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Coach Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('coach_id', json.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Coach Maria\",\n  \"bio\": \"Former pro player with 10+ years of coaching experience. Specializes in beginners and intermediate players.\",\n  \"rate_per_hour\": 45.00,\n  \"specialties\": [\"Beginner Fundamentals\", \"Dinking Strategy\", \"Third Shot Drop\"],\n  \"avatar_url\": \"https://example.com/coach-maria.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/coaches",
+              "host": ["{{base_url}}"],
+              "path": ["coaches"]
+            }
+          }
+        },
+        {
+          "name": "Update Coach Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Coach Maria Rodriguez\",\n  \"rate_per_hour\": 50.00,\n  \"specialties\": [\"Beginner Fundamentals\", \"Dinking Strategy\", \"Third Shot Drop\", \"Tournament Prep\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/coaches/{{coach_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["coaches", "{{coach_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Coach Profile",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coaches/{{coach_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["coaches", "{{coach_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings (Court)",
+      "item": [
+        {
+          "name": "List My Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Get Booking by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "{{booking_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Court Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('booking_id', json.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"court_id\": \"{{court_id}}\",\n  \"date\": \"2026-03-15\",\n  \"start_time\": \"10:00\",\n  \"end_time\": \"11:00\",\n  \"include_coach\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Create Combo Booking (Court + Coach)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('booking_id', json.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"court_id\": \"{{court_id}}\",\n  \"coach_id\": \"{{coach_id}}\",\n  \"date\": \"2026-03-16\",\n  \"start_time\": \"14:00\",\n  \"end_time\": \"15:30\",\n  \"include_coach\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "{{booking_id}}", "cancel"]
+            }
+          }
+        },
+        {
+          "name": "Delete Booking",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "{{booking_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coach Bookings",
+      "item": [
+        {
+          "name": "List My Coach Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coach-bookings",
+              "host": ["{{base_url}}"],
+              "path": ["coach-bookings"]
+            }
+          }
+        },
+        {
+          "name": "Get Coach Booking by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coach-bookings/{{coach_booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["coach-bookings", "{{coach_booking_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Coach-Only Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('coach_booking_id', json.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coach_id\": \"{{coach_id}}\",\n  \"date\": \"2026-03-17\",\n  \"start_time\": \"09:00\",\n  \"end_time\": \"10:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/coach-bookings",
+              "host": ["{{base_url}}"],
+              "path": ["coach-bookings"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Coach Booking",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coach-bookings/{{coach_booking_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["coach-bookings", "{{coach_booking_id}}", "cancel"]
+            }
+          }
+        },
+        {
+          "name": "Delete Coach Booking",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/coach-bookings/{{coach_booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["coach-bookings", "{{coach_booking_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Availability",
+      "item": [
+        {
+          "name": "Get Court Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/availability/courts/{{court_id}}?date=2026-03-15",
+              "host": ["{{base_url}}"],
+              "path": ["availability", "courts", "{{court_id}}"],
+              "query": [
+                { "key": "date", "value": "2026-03-15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Coach Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/availability/coaches/{{coach_id}}?date=2026-03-15",
+              "host": ["{{base_url}}"],
+              "path": ["availability", "coaches", "{{coach_id}}"],
+              "query": [
+                { "key": "date", "value": "2026-03-15" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

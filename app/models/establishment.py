@@ -15,6 +15,8 @@ class Establishment(Base):
     description = Column(Text)
     amenities = Column(ARRAY(String), default=[])
     images = Column(ARRAY(String), default=[])
+    open_time = Column(String, nullable=False, server_default="06:00")
+    close_time = Column(String, nullable=False, server_default="22:00")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

@@ -2,18 +2,21 @@ import time
 import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.routers import auth, establishments, courts, coaches, bookings, coach_bookings, availability
 from app.routers import upload
 
 # ── Logging setup ─────────────────────────────────────────────────────────────
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s  %(levelname)-8s  %(message)s",
-    datefmt="%H:%M:%S",
-)
 logger = logging.getLogger("dinkr")
+if not logger.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter(
+        "%(asctime)s  %(levelname)-8s  %(message)s",
+        datefmt="%H:%M:%S",
+    ))
+    logger.addHandler(_handler)
+logger.setLevel(logging.INFO)
+logger.propagate = False
 
 app = FastAPI(title="Dinkr API", version="1.0.0")
 
@@ -50,8 +53,6 @@ app.include_router(bookings.router, prefix="/bookings", tags=["Bookings"])
 app.include_router(coach_bookings.router, prefix="/coach-bookings", tags=["Coach Bookings"])
 app.include_router(availability.router, prefix="/availability", tags=["Availability"])
 app.include_router(upload.router, prefix="/upload", tags=["Upload"])
-
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.get("/health")

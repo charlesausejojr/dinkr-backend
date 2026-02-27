@@ -1,100 +1,68 @@
-import os
-import uuid
 import logging
+import cloudinary
+import cloudinary.uploader
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from app.config import settings
 
 router = APIRouter()
 logger = logging.getLogger("dinkr")
 
-UPLOAD_DIR = "uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+cloudinary.config(
+    cloud_name=settings.cloudinary_cloud_name,
+    api_key=settings.cloudinary_api_key,
+    api_secret=settings.cloudinary_api_secret,
+    secure=True,
+)
 
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
-ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "gif"}
 
-# Guardrails
-PHOTO_MIN_BYTES  = 100 * 1024        #  100 KB — ensures real photo quality
-PHOTO_MAX_BYTES  = 5  * 1024 * 1024  #    5 MB — prevents massive uploads
-AVATAR_MIN_BYTES = 30  * 1024        #   30 KB — avatars can be smaller
+PHOTO_MIN_BYTES  = 100 * 1024        #  100 KB
+PHOTO_MAX_BYTES  = 5  * 1024 * 1024  #    5 MB
+AVATAR_MIN_BYTES = 30  * 1024        #   30 KB
 AVATAR_MAX_BYTES = 3  * 1024 * 1024  #    3 MB
 
 
-def _validate_and_save(
-    contents: bytes,
-    filename: str,
-    content_type: str,
-    min_bytes: int,
-    max_bytes: int,
-    label: str,
-) -> str:
+def _validate(contents: bytes, content_type: str, min_bytes: int, max_bytes: int, label: str) -> None:
     if content_type not in ALLOWED_TYPES:
-        raise HTTPException(
-            status_code=400,
-            detail="Only JPEG, PNG, WebP, and GIF images are accepted."
-        )
-
-    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else "jpg"
-    if ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="Unsupported file extension.")
+        raise HTTPException(status_code=400, detail="Only JPEG, PNG, WebP, and GIF images are accepted.")
 
     size = len(contents)
     if size < min_bytes:
         raise HTTPException(
             status_code=400,
-            detail=(
-                f"{label} is too small ({size // 1024} KB). "
-                f"Please upload a higher-quality image (minimum {min_bytes // 1024} KB)."
-            )
+            detail=f"{label} is too small ({size // 1024} KB). Minimum is {min_bytes // 1024} KB."
         )
     if size > max_bytes:
         raise HTTPException(
             status_code=400,
-            detail=(
-                f"{label} is too large ({size / (1024 * 1024):.1f} MB). "
-                f"Maximum allowed size is {max_bytes // (1024 * 1024)} MB."
-            )
+            detail=f"{label} is too large ({size / (1024*1024):.1f} MB). Maximum is {max_bytes // (1024*1024)} MB."
         )
 
-    unique_name = f"{uuid.uuid4()}.{ext}"
-    path = os.path.join(UPLOAD_DIR, unique_name)
-    with open(path, "wb") as f:
-        f.write(contents)
 
-    logger.info("File uploaded: %s (%d KB)", unique_name, size // 1024)
-    return f"/uploads/{unique_name}"
+def _upload(contents: bytes, folder: str) -> str:
+    result = cloudinary.uploader.upload(
+        contents,
+        folder=f"dinkr/{folder}",
+        resource_type="image",
+    )
+    return result["secure_url"]
 
 
 @router.post("/photo")
 async def upload_photo(file: UploadFile = File(...)):
-    """
-    For establishment and court photos.
-    Min: 100 KB | Max: 5 MB | Types: JPEG, PNG, WebP, GIF
-    """
+    """Establishment and court photos. Min 100 KB · Max 5 MB."""
     contents = await file.read()
-    url = _validate_and_save(
-        contents,
-        file.filename or "upload",
-        file.content_type or "",
-        PHOTO_MIN_BYTES,
-        PHOTO_MAX_BYTES,
-        "Photo",
-    )
+    _validate(contents, file.content_type or "", PHOTO_MIN_BYTES, PHOTO_MAX_BYTES, "Photo")
+    url = _upload(contents, "photos")
+    logger.info("Photo uploaded → %s", url)
     return {"url": url}
 
 
 @router.post("/avatar")
 async def upload_avatar(file: UploadFile = File(...)):
-    """
-    For coach profile avatars.
-    Min: 30 KB | Max: 3 MB | Types: JPEG, PNG, WebP, GIF
-    """
+    """Coach profile avatars. Min 30 KB · Max 3 MB."""
     contents = await file.read()
-    url = _validate_and_save(
-        contents,
-        file.filename or "avatar",
-        file.content_type or "",
-        AVATAR_MIN_BYTES,
-        AVATAR_MAX_BYTES,
-        "Avatar",
-    )
+    _validate(contents, file.content_type or "", AVATAR_MIN_BYTES, AVATAR_MAX_BYTES, "Avatar")
+    url = _upload(contents, "avatars")
+    logger.info("Avatar uploaded → %s", url)
     return {"url": url}

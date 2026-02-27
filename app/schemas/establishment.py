@@ -10,6 +10,8 @@ class EstablishmentCreate(BaseModel):
     description: str | None = None
     amenities: list[str] = []
     images: list[str] = []
+    open_time: str = "06:00"
+    close_time: str = "22:00"
 
 
 class EstablishmentUpdate(BaseModel):
@@ -18,6 +20,8 @@ class EstablishmentUpdate(BaseModel):
     description: str | None = None
     amenities: list[str] | None = None
     images: list[str] | None = None
+    open_time: str | None = None
+    close_time: str | None = None
     is_active: bool | None = None
 
 
@@ -29,6 +33,8 @@ class EstablishmentOut(BaseModel):
     description: str | None
     amenities: list[str]
     images: list[str]
+    open_time: str
+    close_time: str
     is_active: bool
     created_at: datetime
 

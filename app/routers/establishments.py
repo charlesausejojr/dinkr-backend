@@ -2,6 +2,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm.attributes import flag_modified
 from app.database import get_db
 from app.models.establishment import Establishment
 from app.models.court import Court
@@ -74,6 +75,9 @@ async def update_establishment(
     updated_fields = list(payload.model_dump(exclude_unset=True).keys())
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(est, field, value)
+        if field == 'schedule':
+            # JSONB mutations aren't detected automatically — flag explicitly
+            flag_modified(est, 'schedule')
     await db.commit()
     await db.refresh(est)
     logger.info("Establishment updated: '%s' (id=%s) fields=%s by %s", est.name, establishment_id, updated_fields, current_user.email)

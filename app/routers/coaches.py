@@ -2,6 +2,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm.attributes import flag_modified
 from app.database import get_db
 from app.models.coach import Coach
 from app.models.user import User
@@ -69,6 +70,8 @@ async def update_coach(
     updated_fields = list(payload.model_dump(exclude_unset=True).keys())
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(coach, field, value)
+        if field == 'schedule':
+            flag_modified(coach, 'schedule')
     await db.commit()
     await db.refresh(coach)
     logger.info("Coach updated: '%s' (id=%s) fields=%s by %s", coach.name, coach_id, updated_fields, current_user.email)

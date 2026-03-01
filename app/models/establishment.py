@@ -1,9 +1,14 @@
 from sqlalchemy import Column, String, Boolean, DateTime, Text, ARRAY
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database import Base
 import uuid
+
+DEFAULT_SCHEDULE = {
+    day: {"open": "06:00", "close": "22:00", "closed": False}
+    for day in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+}
 
 
 class Establishment(Base):
@@ -15,8 +20,7 @@ class Establishment(Base):
     description = Column(Text)
     amenities = Column(ARRAY(String), default=[])
     images = Column(ARRAY(String), default=[])
-    open_time = Column(String, nullable=False, server_default="06:00")
-    close_time = Column(String, nullable=False, server_default="22:00")
+    schedule = Column(JSONB, nullable=False, default=DEFAULT_SCHEDULE)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

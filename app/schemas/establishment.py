@@ -3,6 +3,19 @@ from uuid import UUID
 from datetime import datetime
 from app.schemas.court import CourtOut
 
+DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+
+DEFAULT_SCHEDULE: dict = {
+    day: {"open": "06:00", "close": "22:00", "closed": False}
+    for day in DAYS
+}
+
+
+class DaySchedule(BaseModel):
+    open: str = "06:00"
+    close: str = "22:00"
+    closed: bool = False
+
 
 class EstablishmentCreate(BaseModel):
     name: str
@@ -10,8 +23,7 @@ class EstablishmentCreate(BaseModel):
     description: str | None = None
     amenities: list[str] = []
     images: list[str] = []
-    open_time: str = "06:00"
-    close_time: str = "22:00"
+    schedule: dict[str, DaySchedule] = {d: DaySchedule() for d in DAYS}
 
 
 class EstablishmentUpdate(BaseModel):
@@ -20,8 +32,7 @@ class EstablishmentUpdate(BaseModel):
     description: str | None = None
     amenities: list[str] | None = None
     images: list[str] | None = None
-    open_time: str | None = None
-    close_time: str | None = None
+    schedule: dict[str, DaySchedule] | None = None
     is_active: bool | None = None
 
 
@@ -33,8 +44,7 @@ class EstablishmentOut(BaseModel):
     description: str | None
     amenities: list[str]
     images: list[str]
-    open_time: str
-    close_time: str
+    schedule: dict
     is_active: bool
     created_at: datetime
 

@@ -30,5 +30,15 @@ class BookingOut(BaseModel):
     include_coach: bool
     status: str
     created_at: datetime
+    # Enriched venue fields
+    court_name: str = ""
+    establishment_name: str = ""
+    establishment_location: str = ""
+    establishment_latitude: float | None = None
+    establishment_longitude: float | None = None
+    # Enriched coach fields (when include_coach is True)
+    coach_name: str = ""
+    coach_avatar_url: str | None = None
+    coach_bio: str = ""
 
     model_config = {"from_attributes": True}

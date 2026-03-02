@@ -5,6 +5,7 @@ from sqlalchemy import select
 from app.database import get_db
 from app.models.booking import Booking
 from app.models.court import Court
+from app.models.establishment import Establishment
 from app.models.coach import Coach
 from app.models.user import User
 from app.schemas.booking import BookingCreate, BookingOut
@@ -89,8 +90,44 @@ async def my_bookings(
         select(Booking).where(Booking.user_id == current_user.id).order_by(Booking.date.desc())
     )
     bookings = result.scalars().all()
+
+    # Enrich each booking with court, establishment, and optional coach details
+    enriched = []
+    for b in bookings:
+        court_res = await db.execute(select(Court).where(Court.id == b.court_id))
+        court = court_res.scalar_one_or_none()
+        est = None
+        if court:
+            est_res = await db.execute(select(Establishment).where(Establishment.id == court.establishment_id))
+            est = est_res.scalar_one_or_none()
+        coach = None
+        if b.include_coach and b.coach_id:
+            coach_res = await db.execute(select(Coach).where(Coach.id == b.coach_id))
+            coach = coach_res.scalar_one_or_none()
+        enriched.append(BookingOut(
+            id=b.id,
+            court_id=b.court_id,
+            user_id=b.user_id,
+            coach_id=b.coach_id,
+            date=b.date,
+            start_time=b.start_time,
+            end_time=b.end_time,
+            total_price=b.total_price,
+            include_coach=b.include_coach,
+            status=b.status,
+            created_at=b.created_at,
+            court_name=court.name if court else "",
+            establishment_name=est.name if est else "",
+            establishment_location=est.location if est else "",
+            establishment_latitude=est.latitude if est else None,
+            establishment_longitude=est.longitude if est else None,
+            coach_name=coach.name if coach else "",
+            coach_avatar_url=coach.avatar_url if coach else None,
+            coach_bio=coach.bio if coach else "",
+        ))
+
     logger.info("Listed %d court bookings for %s", len(bookings), current_user.email)
-    return bookings
+    return enriched
 
 
 @router.delete("/{booking_id}", status_code=204)

@@ -24,6 +24,8 @@ class EstablishmentCreate(BaseModel):
     amenities: list[str] = []
     images: list[str] = []
     schedule: dict[str, DaySchedule] = {d: DaySchedule() for d in DAYS}
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 class EstablishmentUpdate(BaseModel):
@@ -33,6 +35,8 @@ class EstablishmentUpdate(BaseModel):
     amenities: list[str] | None = None
     images: list[str] | None = None
     schedule: dict[str, DaySchedule] | None = None
+    latitude: float | None = None
+    longitude: float | None = None
     is_active: bool | None = None
 
 
@@ -45,6 +49,8 @@ class EstablishmentOut(BaseModel):
     amenities: list[str]
     images: list[str]
     schedule: dict
+    latitude: float | None
+    longitude: float | None
     is_active: bool
     created_at: datetime
 

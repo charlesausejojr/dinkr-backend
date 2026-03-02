@@ -69,8 +69,28 @@ async def my_coach_bookings(
         select(CoachBooking).where(CoachBooking.user_id == current_user.id).order_by(CoachBooking.date.desc())
     )
     bookings = result.scalars().all()
+
+    enriched = []
+    for b in bookings:
+        coach_res = await db.execute(select(Coach).where(Coach.id == b.coach_id))
+        coach = coach_res.scalar_one_or_none()
+        enriched.append(CoachBookingOut(
+            id=b.id,
+            coach_id=b.coach_id,
+            user_id=b.user_id,
+            date=b.date,
+            start_time=b.start_time,
+            end_time=b.end_time,
+            total_price=b.total_price,
+            status=b.status,
+            created_at=b.created_at,
+            coach_name=coach.name if coach else "",
+            coach_avatar_url=coach.avatar_url if coach else None,
+            coach_bio=coach.bio if coach else "",
+        ))
+
     logger.info("Listed %d coach bookings for %s", len(bookings), current_user.email)
-    return bookings
+    return enriched
 
 
 @router.delete("/{booking_id}", status_code=204)

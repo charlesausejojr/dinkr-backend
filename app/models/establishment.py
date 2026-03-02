@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, DateTime, Text, ARRAY
+from sqlalchemy import Column, String, Boolean, DateTime, Text, ARRAY, Float
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -21,6 +21,8 @@ class Establishment(Base):
     amenities = Column(ARRAY(String), default=[])
     images = Column(ARRAY(String), default=[])
     schedule = Column(JSONB, nullable=False, default=DEFAULT_SCHEDULE)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

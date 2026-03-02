@@ -20,5 +20,9 @@ class CoachBookingOut(BaseModel):
     total_price: float
     status: str
     created_at: datetime
+    # Enriched coach fields
+    coach_name: str = ""
+    coach_avatar_url: str | None = None
+    coach_bio: str = ""
 
     model_config = {"from_attributes": True}
